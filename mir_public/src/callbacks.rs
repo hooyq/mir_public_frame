@@ -98,8 +98,7 @@ impl TaintAnaCallbacks {
             // Extract function signature (simplified)
             let def_id = instance.def_id();
             let name = tcx.def_path_str_with_args(def_id, instance.args);
-            info!("Processing function: {}", name);
-            
+
             // TODO: 完善函数签名提取
             // - 提取完整的参数类型列表
             // - 提取返回类型
@@ -107,6 +106,8 @@ impl TaintAnaCallbacks {
             
             // Try to get MIR body and traverse basic blocks
             if let Some(body) = get_mir_body(tcx, instance, typing_env) {
+                // Only log functions that actually belong to the local crate and have MIR.
+                info!("Processing function: {}", name);
                 traverse_basic_blocks(tcx, instance, &body);
             } else {
                 debug!("Function {} has no MIR body", name);
