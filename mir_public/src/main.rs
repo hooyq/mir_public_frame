@@ -7,14 +7,20 @@ extern crate rustc_driver;
 extern crate rustc_interface;
 extern crate rustc_middle;
 extern crate rustc_session;
+extern crate rustc_span;
 
-mod callbacks;
+mod app;
+mod classify;
+mod collect;
+mod graph;
+mod io;
+mod settings;
 
 use log::debug;
 use rustc_session::config::ErrorOutputType;
 use rustc_session::EarlyDiagCtxt;
 
-fn main() {
+fn main() -> std::process::ExitCode {
     // Initialize loggers.
     let handler = EarlyDiagCtxt::new(ErrorOutputType::default());
     if std::env::var("RUSTC_LOG").is_ok() {
@@ -85,11 +91,12 @@ fn main() {
             }
         }
 
-        let mut callbacks = callbacks::TaintAnaCallbacks::new();
+        let cfg = settings::AnalysisConfig::from_env();
+        let mut callbacks = app::MirPublicCallbacks::new(cfg);
         debug!("rustc_command_line_arguments {rustc_command_line_arguments:?}");
         rustc_driver::run_compiler(&rustc_command_line_arguments, &mut callbacks);
     });
-    std::process::exit(exit_code);
+    exit_code
 }
 
 fn find_sysroot() -> String {

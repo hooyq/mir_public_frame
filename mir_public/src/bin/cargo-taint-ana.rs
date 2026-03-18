@@ -14,6 +14,9 @@ Common options:
     -V, --version            Print version info and exit
     
 Options after the first "--" are the same arguments that `cargo build` accepts.
+Env:
+    MIR_PUBLIC_OUTPUT=/path/to/graph.json   GraphIR output path (default: mir_public_graph.json)
+    MIR_PUBLIC_DEPTH_K=0                    Reserved depth parameter in GraphIR target metadata
 
 Examples:
     # Extract function signatures from the project
@@ -40,7 +43,7 @@ fn has_arg_flag(name: &str) -> bool {
     args.any(|val| val == name)
 }
 
-fn in_cargo_taint_ana() {
+fn in_cargo_mir_public() {
     // Now we run `cargo build $FLAGS $ARGS`, giving the user the
     // chance to add additional arguments. `FLAGS` is set to identify
     // this target. The user gets to control what gets actually passed to taint-ana.
@@ -118,6 +121,7 @@ fn in_cargo_taint_ana() {
 
     let flags: Vec<_> = args.by_ref().take_while(|arg| arg != "--").collect();
     let flags = flags.join(" ");
+    cmd.env("MIR_PUBLIC_FLAGS", &flags);
     cmd.env("TAINT_ANA_FLAGS", flags);
 
     let exit_status = cmd
@@ -141,7 +145,7 @@ fn main() {
         return;
     }
     if let Some("mir-public") = std::env::args().nth(1).as_deref() {
-        in_cargo_taint_ana();
+        in_cargo_mir_public();
     }
 }
 
